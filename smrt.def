@@ -1,0 +1,30 @@
+BootStrap: library
+From: ubuntu:22.04
+
+%files
+
+    install.sh /opt/pacbio/install.sh
+
+%post
+
+    chmod +x /opt/pacbio/install.sh
+
+    apt-get update
+    apt-get install -y rsync
+    apt-get install -y locales
+    apt-get install -y iproute2 # includes ss
+    apt-get clean
+
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+
+    mkdir -p /opt/pacbio # ideally, install here
+
+%environment
+
+    export LANG=en_US.utf8
+    export SMRT_ROOT=$(pwd)/smrtlink
+    export INSTALLER=./smrtlink-release_13.0.0.207600_linux_x86-64_libc-2.17_anydistro.run
+    export EXTRACT_CMD="$INSTALLER --extract-bundles-only --rootdir $SMRT_ROOT"
+    export INSTALL_CMD="$INSTALLER --batch --no-extract --lite true --jmstype NONE --nworkers 4 --rootdir $SMRT_ROOT"
+    export INSTALL_SCRIPT=/opt/pacbio/install.sh
+    export RUN_BIN=$SMRT_ROOT/admin/bin/services-start
