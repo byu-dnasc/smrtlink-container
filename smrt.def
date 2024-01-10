@@ -3,11 +3,11 @@ From: ubuntu:22.04
 
 %files
 
-    install.sh /opt/pacbio/install.sh
+    imported /opt/pacbio/imported
 
 %post
 
-    chmod +x /opt/pacbio/install.sh
+    chmod +x /opt/pacbio/imported # make imported files executable
 
     apt-get update
     apt-get install -y rsync
@@ -22,9 +22,19 @@ From: ubuntu:22.04
 %environment
 
     export LANG=en_US.utf8
-    export SMRT_ROOT=$(pwd)/smrtlink
-    export INSTALLER=./smrtlink-release_13.0.0.207600_linux_x86-64_libc-2.17_anydistro.run
-    export EXTRACT_CMD="$INSTALLER --extract-bundles-only --rootdir $SMRT_ROOT"
-    export INSTALL_CMD="$INSTALLER --batch --no-extract --lite true --jmstype NONE --nworkers 4 --rootdir $SMRT_ROOT"
-    export INSTALL_SCRIPT=/opt/pacbio/install.sh
-    export RUN_BIN=$SMRT_ROOT/admin/bin/services-start
+    export SMRT_ROOT=/home/{{ user }}/smrtlink-container/smrtlink
+    export PATH=$PATH:$SMRT_ROOT/admin/bin
+
+%startscript
+
+    echo "[$NOW] Start script initiated..."
+
+    output=$(services-start)
+    exit_code=$?
+
+    awk '{ print " + " $0 }' <<< "$output"
+
+    if [ $exit_code -ne 0 ]; then
+        echo "SMRT Link exited non-zero."
+    fi
+    echo "[$NOW] Start script complete." 
