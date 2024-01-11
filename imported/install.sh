@@ -1,13 +1,13 @@
-# set variables if not already set
-[ -z "$SMRT_ROOT" ] && SMRT_ROOT=/opt/pacbio/smrtlink
-[ -z "$INSTALLER" ] && INSTALLER=./smrtlink-release_13.0.0.207600_linux_x86-64_libc-2.17_anydistro.run
-[ -z "$EXTRACT_CMD" ] && EXTRACT_CMD="$INSTALLER --extract-bundles-only --rootdir $SMRT_ROOT"
-[ -z "$INSTALL_CMD" ] && INSTALL_CMD="$INSTALLER --batch --no-extract --lite true --jmstype NONE --nworkers 4 --rootdir $SMRT_ROOT"
+# installer variable must be set
+[ -z "$INSTALLER" ] && echo "$0: INSTALLER not set" && exit 1
+[ -z "$SMRT_ROOT" ] && echo "$0: SMRT_ROOT not set" && exit 1
 
 # extract SMRT Link bundles and modify installprompter script
 if [ ! -d $SMRT_ROOT ]; then
-    read -p "Extract SMRT Link to $SMRT_ROOT? [y/N] " -n 1 -r
+    read -p "$0: Extract SMRT Link to $SMRT_ROOT? [y/N] "
     if [[ $REPLY =~ ^[Yy]$ ]]; then
+        [ -z "$EXTRACT_CMD" ] && echo "$0: EXTRACT_CMD not set" && exit 1
+        [ ! -w ${SMRT_ROOT%smrtlink} ] && echo "$0: ${SMRT_ROOT%smrtlink} is not writable." && exit 1
         eval "$EXTRACT_CMD"
         # remove -a option from lines 11744,45,49,50 of installprompter
         installprompter="$SMRT_ROOT/install/smrtlink-release_13.0.0.207600/admin/bin/installprompter"
@@ -21,10 +21,15 @@ if [ ! -d $SMRT_ROOT ]; then
             done
         fi
         # TODO: delete all unnecessary bundles
+    else
+        exit 1
     fi
+else
+    echo "$0: $SMRT_ROOT already exists."
 fi
 
-read -p "Install SMRT Link to $SMRT_ROOT? [y/N] " -n 1 -r
+read -p "$0: Install SMRT Link to $SMRT_ROOT? [y/N] "
 if [[ $REPLY =~ ^[Yy]$ ]]; then
+    [ -z "$INSTALL_CMD" ] && echo "$0: INSTALL_CMD not set" && exit 1
     eval "$INSTALL_CMD"
 fi
