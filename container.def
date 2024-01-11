@@ -1,0 +1,44 @@
+BootStrap: library
+From: ubuntu:22.04
+
+%files
+
+    imported /imported
+
+%post
+
+    chmod +x /imported # make imported files executable
+
+    apt-get update && \
+    apt-get install -y rsync && \
+    apt-get install -y locales && \
+    apt-get install -y iproute2 && \
+    apt-get clean && \
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+
+    mkdir -p /opt/pacbio # ideally, install here
+
+%environment
+
+    export LANG=en_US.utf8
+    export SMRT_ROOT={{ smrt_root }}
+    export PATH=$PATH:$SMRT_ROOT/admin/bin
+
+%startscript
+
+    NOW=$(date +"%F %T")
+    echo "[$NOW] Start script initiated..."
+
+    # try to start services
+    output=$(services-start)
+    exit_code=$?
+    [ $? -eq 127 ] && echo "Could not start services: services-start not found." && exit 1
+
+    # print output from services-start
+    [ -n "$output" ] && echo "From services-start:" && echo "$output" | awk '{ print "+ " $0 }'
+
+    # exit if services-start failed
+    [ $exit_code -ne 0 ] && echo "SMRT Link exited non-zero (exit code $exit_code)." && exit 1
+
+    NOW=$(date +"%F %T")
+    echo "[$NOW]  ...start script complete."
