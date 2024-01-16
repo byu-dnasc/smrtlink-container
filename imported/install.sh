@@ -1,5 +1,6 @@
 # installer variable must be set
 [ -z "$INSTALLER" ] && echo "$0: INSTALLER not set" && exit 1
+[ ! -f "$INSTALLER" ] && echo "$0: Installer ($INSTALLER) not found." && exit 1
 [ -z "$SMRT_ROOT" ] && echo "$0: SMRT_ROOT not set" && exit 1
 
 # extract SMRT Link bundles and modify installprompter script
