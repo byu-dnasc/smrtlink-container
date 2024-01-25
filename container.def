@@ -25,20 +25,18 @@ From: ubuntu:22.04
     export PATH=$PATH:$SMRT_ROOT/admin/bin
 
 %startscript
-
+    
     NOW=$(date +"%F %T")
-    echo "[$NOW] Start script initiated..."
+    echo "[$NOW] {{ start_signal }}..."
+    echo "[$NOW] {{ start_signal }}..." >&2
 
-    # try to start services
-    output=$(services-start)
-    exit_code=$?
-    [ $? -eq 127 ] && echo "Could not start services: services-start not found." && exit 1
-
-    # print output from services-start
-    [ -n "$output" ] && echo "From services-start:" && echo "$output" | awk '{ print "+ " $0 }'
-
-    # exit if services-start failed
-    [ $exit_code -ne 0 ] && echo "SMRT Link exited non-zero (exit code $exit_code)." && exit 1
+    if command -v services-start > /dev/null; then
+        echo "From services-start:"
+        services-start
+    else
+        echo "services-start not found."
+    fi
 
     NOW=$(date +"%F %T")
     echo "[$NOW]  ...start script complete."
+    echo "[$NOW]  ...start script complete." >&2

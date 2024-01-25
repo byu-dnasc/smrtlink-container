@@ -7,6 +7,7 @@ build() {
         --fakeroot \
         --force \
         --build-arg smrt_root=$SMRT_ROOT \
+        --build-arg start_signal="$START_SIGNAL" \
         container.sif container.def
 }
 
@@ -38,23 +39,52 @@ sanity() {
 start() {
     container && echo "The container is already running." && return 1
     singularity instance start container.sif $CONTAINER
+    follow
 }
 
 stop() {
     ! container && echo "The container is not running." && return 1
-    singularity instance stop $CONTAINER
+    singularity instance stop -F $CONTAINER
 }
 
 log() {
     [ ! -f "$CONTAINER_LOG" ] && echo "The container log does not exist." && return 1
-    cat "$CONTAINER_LOG"
-    [ -s "${CONTAINER_LOG/.out/.err}" ] && \
-        echo "################### ERROR LOG ###################" && \
-        cat "${CONTAINER_LOG/.out/.err}"
-    read -p "Clear container logs? [y/N] " -n 1 -r
-    [[ $REPLY =~ ^[Yy]$ ]] && \
-        > $CONTAINER_LOG && \
-        > ${CONTAINER_LOG/.out/.err} && \
-        echo ""
-    return 0
+
+    # get line number of last time the start script was initiated
+    LINE_OUT=$(grep -n "$START_SIGNAL" $CONTAINER_LOG | tail -n 1 | cut -d: -f1)
+    LINE_ERR=$(grep -n "$START_SIGNAL" ${CONTAINER_LOG/.out/.err} | tail -n 1 | cut -d: -f1)
+
+    echo "Line $LINE_OUT to the end of $CONTAINER_LOG:"
+    tail -n +$LINE_OUT $CONTAINER_LOG | awk '{print "+ " $0}'
+    echo "Line $LINE_ERR to the end of ${CONTAINER_LOG/.out/.err}:"
+    tail -n +$LINE_ERR ${CONTAINER_LOG/.out/.err} | awk '{print "- " $0}'
+}
+
+follow() {
+
+    [ ! -f "$CONTAINER_LOG" ] && echo "The container log does not exist." && return 1
+
+    # get line number of last time the start script was initiated
+    LINE_OUT=$(grep -n "$START_SIGNAL" $CONTAINER_LOG | tail -n 1 | cut -d: -f1)
+    LINE_ERR=$(grep -n "$START_SIGNAL" ${CONTAINER_LOG/.out/.err} | tail -n 1 | cut -d: -f1)
+
+    [ -z "$LINE_OUT" ] && [ -z "$LINE_ERR" ] && echo "Startscript activity not detected in log." && return 1
+    
+    # in the background, follow the logs, starting at the last time the start script was initiated
+    TAIL_OUT_PID=$(tail -f -n +$LINE_OUT $CONTAINER_LOG > /tmp/container.out & echo $!)
+    TAIL_ERR_PID=$(tail -f -n +$LINE_ERR ${CONTAINER_LOG/.out/.err} > /tmp/container.err & echo $!)
+
+    # follow the logs in the foreground
+    echo "Enter 'Ctrl-C' to stop following logs."
+    tail -f -n +1 /tmp/container.err /tmp/container.out &
+    TAIL_PID=$!
+
+    trap "kill $TAIL_PID" SIGINT
+
+    wait $TAIL_PID
+    echo
+    kill $TAIL_OUT_PID; kill $TAIL_ERR_PID
+    rm -f /tmp/container.out /tmp/container.err
+    trap - SIGINT
+
 }
