@@ -2,3 +2,6 @@ smrtlink*
 *.sif
 *.img
 *.log
+*.zip
+*.xml
+dataset*
