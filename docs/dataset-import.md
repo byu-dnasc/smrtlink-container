@@ -45,7 +45,9 @@ files belonging to a dataset, but the contents vary:
 
 ## Parent, then child
 
-If a dataset specifies pbds:ParentDataSet
+If a dataset specifies a parent dataset (i.e., if the XML contains a 'pbds:ParentDataSet' element),
+then that dataset must exist in the database before importing the child dataset,
+or else the child dataset's parent id will be changed to null.
 
 ## Dataset from scratch?
 
