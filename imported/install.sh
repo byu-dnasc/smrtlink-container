@@ -21,7 +21,6 @@ if [ ! -d $SMRT_ROOT ]; then
                 sed -i "${line}s/cp -a/cp -r/" $installprompter
             done
         fi
-        # TODO: delete all unnecessary bundles
     else
         exit 1
     fi
