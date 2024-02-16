@@ -19,7 +19,7 @@ install() {
         bash /imported/install.sh
 }
 
-container() { singularity instance list | grep -q $CONTAINER; }
+container() { singularity instance list | awk 'NR>1 {print $1}' | grep -q $CONTAINER; }
 
 shell() {
     ! container && echo "The container is not running." && return 1
