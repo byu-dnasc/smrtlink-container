@@ -11,13 +11,15 @@ if [ ! -d $SMRT_ROOT ]; then
         [ ! -w ${SMRT_ROOT%smrtlink} ] && echo "$0: ${SMRT_ROOT%smrtlink} is not writable." && exit 1
         eval "$EXTRACT_CMD"
         # remove -a option from lines 11744,45,49,50 of installprompter
-        installprompter="$SMRT_ROOT/install/smrtlink-release_13.0.0.207600/admin/bin/installprompter"
+        installprompter="$SMRT_ROOT/current/admin/bin/installprompter"
         if [ -f $installprompter ]; then
             for line in 11744 11745 11749 11750; do
+                # TODO: handle case where cp -a is not on this line
                 sed -i "${line}s/cp -a/cp/" $installprompter
             done
             # replace -a option with -r on lines 13698 and 13703 of installprompter
             for line in 13698 13703; do
+                # TODO: handle case where cp -a is not on this line
                 sed -i "${line}s/cp -a/cp -r/" $installprompter
             done
         fi
