@@ -1,7 +1,7 @@
 # SMRTLink Container
 
 This repository is dedicated to developing a containerized SMRTLink
-server for testing the DNASC app.
+server. See the GitHub [Wiki](https://github.com/byu-dnasc/smrtlink-container/wiki) for documentation.
 
 ## Development log
 
