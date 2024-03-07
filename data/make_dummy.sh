@@ -7,6 +7,8 @@ OUTPUT_DIR=~/datasets
 
 # use NAME if exists, otherwise use random
 DATASET_DIR="$([ -z $2 ] && mktemp -d $OUTPUT_DIR/XXX || echo $OUTPUT_DIR/$2 ).pacb"
+mv $DATASET_DIR $DATASET_DIR.pacb
+DATASET_DIR=$DATASET_DIR.pacb
 
 cd $1
 # create directories
