@@ -5,7 +5,7 @@
 # use NAME if exists, otherwise use random
 DATASET_DIR=$([ -z $2 ] && mktemp -d XXX || echo $2 )
 mv $DATASET_DIR $DATASET_DIR.pacb
-DATASET_DIR=$DATASET_DIR.pacb
+DATASET_DIR=$(pwd)/$DATASET_DIR.pacb
 
 cd $1
 # create directories
