@@ -2,11 +2,8 @@
 
 [ ! -d $1 ] && echo "Directory $1 does not exist." && exit 1
 
-OUTPUT_DIR=~/datasets
-[ ! -d $OUTPUT_DIR ] && echo "Directory $OUTPUT_DIR must exist." && exit 1
-
 # use NAME if exists, otherwise use random
-DATASET_DIR=$([ -z $2 ] && mktemp -d $OUTPUT_DIR/XXX || echo $OUTPUT_DIR/$2 )
+DATASET_DIR=$([ -z $2 ] && mktemp -d XXX || echo $2 )
 mv $DATASET_DIR $DATASET_DIR.pacb
 DATASET_DIR=$DATASET_DIR.pacb
 
